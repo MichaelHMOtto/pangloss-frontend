@@ -1,0 +1,1145 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "MyTestApp",
+        "version": "0.1.0"
+    },
+    "paths": {
+        "/api/MyModel/": {
+            "get": {
+                "tags": [
+                    "MyModel"
+                ],
+                "summary": "Mymodel.Index",
+                "operationId": "MyModelIndex",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "",
+                            "title": "Q"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "title": "Page"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 50,
+                            "title": "Pagesize"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SearchResultObject_MyModelReferenceView_"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/MyModel/{id}": {
+            "get": {
+                "tags": [
+                    "MyModel"
+                ],
+                "summary": "Mymodel.Get",
+                "operationId": "MyModelGet",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 26,
+                                    "maxLength": 26,
+                                    "pattern": "[A-Z0-9]{26}"
+                                },
+                                {
+                                    "type": "string",
+                                    "format": "binary",
+                                    "minLength": 16,
+                                    "maxLength": 16
+                                },
+                                {
+                                    "type": "string",
+                                    "format": "uri",
+                                    "minLength": 1
+                                }
+                            ],
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MyModelHeadView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "MyModel"
+                ],
+                "summary": "Mymodel.Delete",
+                "operationId": "MyModel_Delete_api_MyModel__id__delete",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 26,
+                                    "maxLength": 26,
+                                    "pattern": "[A-Z0-9]{26}"
+                                },
+                                {
+                                    "type": "string",
+                                    "format": "binary",
+                                    "minLength": 16,
+                                    "maxLength": 16
+                                }
+                            ],
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/MyModel/new": {
+            "post": {
+                "tags": [
+                    "MyModel"
+                ],
+                "summary": "Mymodel.Create",
+                "operationId": "MyModelCreate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MyModelCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MyModelReferenceView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/MyModel/{id}/edit": {
+            "get": {
+                "tags": [
+                    "MyModel"
+                ],
+                "summary": "Mymodel.Edit.Get",
+                "operationId": "MyModelEditGet",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 26,
+                                    "maxLength": 26,
+                                    "pattern": "[A-Z0-9]{26}"
+                                },
+                                {
+                                    "type": "string",
+                                    "format": "binary",
+                                    "minLength": 16,
+                                    "maxLength": 16
+                                }
+                            ],
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/MyModelEditHeadView"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "MyModel"
+                ],
+                "summary": "Mymodel.Edit.Patch",
+                "operationId": "MyModelEditPatch",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "minLength": 26,
+                                    "maxLength": 26,
+                                    "pattern": "[A-Z0-9]{26}"
+                                },
+                                {
+                                    "type": "string",
+                                    "format": "binary",
+                                    "minLength": 16,
+                                    "maxLength": 16
+                                }
+                            ],
+                            "title": "Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/MyModelEditHeadSet"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/token": {
+            "post": {
+                "tags": [
+                    "Pangloss.User"
+                ],
+                "summary": "Get Token",
+                "operationId": "get_token_api_users_token_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginCredentials"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/session": {
+            "post": {
+                "tags": [
+                    "Pangloss.User"
+                ],
+                "summary": "Get Session",
+                "operationId": "get_session_api_users_session_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginCredentials"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Pangloss.User"
+                ],
+                "summary": "Delete Session",
+                "operationId": "delete_session_api_users_session_delete",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/me": {
+            "get": {
+                "tags": [
+                    "Pangloss.User"
+                ],
+                "summary": "Read Users Me",
+                "operationId": "read_users_me_api_users_me_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/me/items": {
+            "get": {
+                "tags": [
+                    "Pangloss.User"
+                ],
+                "summary": "Read Own Items",
+                "operationId": "read_own_items_api_users_me_items_get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/users/new": {
+            "post": {
+                "tags": [
+                    "Pangloss.User"
+                ],
+                "summary": "Createuser",
+                "operationId": "CreateUser_api_users_new_post",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/": {
+            "get": {
+                "summary": "Index",
+                "operationId": "index__get",
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "HTTPValidationError": {
+                "properties": {
+                    "detail": {
+                        "items": {
+                            "$ref": "#/components/schemas/ValidationError"
+                        },
+                        "type": "array",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "title": "HTTPValidationError"
+            },
+            "LoginCredentials": {
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "username",
+                    "password"
+                ],
+                "title": "LoginCredentials"
+            },
+            "MyModelCreate": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "MyModel",
+                        "title": "Type",
+                        "default": "MyModel"
+                    },
+                    "id": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ULID"
+                            },
+                            {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri"
+                            },
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "format": "uri"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Id"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    },
+                    "uris": {
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "format": "uri"
+                        },
+                        "type": "array",
+                        "title": "Uris"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "label",
+                    "name"
+                ],
+                "title": "MyModelCreate"
+            },
+            "MyModelEditHeadSet": {
+                "properties": {
+                    "id": {
+                        "$ref": "#/components/schemas/ULID"
+                    },
+                    "type": {
+                        "type": "string",
+                        "const": "MyModel",
+                        "title": "Type",
+                        "default": "MyModel"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    },
+                    "uris": {
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "format": "uri"
+                        },
+                        "type": "array",
+                        "title": "Uris"
+                    },
+                    "semanticSpaces": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Semanticspaces"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "label",
+                    "name"
+                ],
+                "title": "MyModelEditHeadSet"
+            },
+            "MyModelEditHeadView": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "MyModel",
+                        "title": "Type",
+                        "default": "MyModel"
+                    },
+                    "id": {
+                        "$ref": "#/components/schemas/ULID"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    },
+                    "uris": {
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "format": "uri"
+                        },
+                        "type": "array",
+                        "title": "Uris"
+                    },
+                    "createdBy": {
+                        "type": "string",
+                        "title": "Createdby"
+                    },
+                    "createdWhen": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Createdwhen"
+                    },
+                    "modifiedBy": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Modifiedby"
+                    },
+                    "modifiedWhen": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Modifiedwhen"
+                    },
+                    "semanticSpaces": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Semanticspaces"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "label",
+                    "createdBy",
+                    "createdWhen",
+                    "name"
+                ],
+                "title": "MyModelEditHeadView"
+            },
+            "MyModelHeadView": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "MyModel",
+                        "title": "Type",
+                        "default": "MyModel"
+                    },
+                    "id": {
+                        "$ref": "#/components/schemas/ULID"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    },
+                    "uris": {
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "format": "uri"
+                        },
+                        "type": "array",
+                        "title": "Uris"
+                    },
+                    "createdBy": {
+                        "type": "string",
+                        "title": "Createdby"
+                    },
+                    "createdWhen": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Createdwhen"
+                    },
+                    "modifiedBy": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Modifiedby"
+                    },
+                    "modifiedWhen": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Modifiedwhen"
+                    },
+                    "semanticSpaces": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "Semanticspaces"
+                    },
+                    "name": {
+                        "type": "string",
+                        "title": "Name"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "label",
+                    "createdBy",
+                    "createdWhen",
+                    "name"
+                ],
+                "title": "MyModelHeadView"
+            },
+            "MyModelReferenceView": {
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "const": "MyModel",
+                        "title": "Type",
+                        "default": "MyModel"
+                    },
+                    "id": {
+                        "$ref": "#/components/schemas/ULID"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Label"
+                    },
+                    "headNode": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ULID"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "headType": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Headtype"
+                    },
+                    "uris": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "format": "uri"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Uris"
+                    },
+                    "semanticSpaces": {
+                        "anyOf": [
+                            {
+                                "items": {
+                                    "type": "string"
+                                },
+                                "type": "array"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Semanticspaces"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "id",
+                    "label"
+                ],
+                "title": "MyModelReferenceView"
+            },
+            "SearchResultObject_MyModelReferenceView_": {
+                "properties": {
+                    "count": {
+                        "type": "integer",
+                        "title": "Count"
+                    },
+                    "page": {
+                        "type": "integer",
+                        "title": "Page"
+                    },
+                    "totalPages": {
+                        "type": "integer",
+                        "title": "Totalpages"
+                    },
+                    "pageSize": {
+                        "type": "integer",
+                        "title": "Pagesize"
+                    },
+                    "results": {
+                        "items": {
+                            "$ref": "#/components/schemas/MyModelReferenceView"
+                        },
+                        "type": "array",
+                        "title": "Results"
+                    },
+                    "nextPage": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nextpage"
+                    },
+                    "previousPage": {
+                        "anyOf": [
+                            {
+                                "type": "integer"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Previouspage"
+                    },
+                    "nextUrl": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Nexturl"
+                    },
+                    "previousUrl": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "minLength": 1,
+                                "format": "uri"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Previousurl"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "count",
+                    "page",
+                    "totalPages",
+                    "pageSize",
+                    "results"
+                ],
+                "title": "SearchResultObject[MyModelReferenceView]"
+            },
+            "SuccessResponse": {
+                "properties": {
+                    "detail": {
+                        "type": "string",
+                        "title": "Detail"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "detail"
+                ],
+                "title": "SuccessResponse"
+            },
+            "ULID": {
+                "anyOf": [
+                    {
+                        "type": "integer"
+                    },
+                    {
+                        "type": "string",
+                        "format": "binary"
+                    },
+                    {
+                        "type": "string"
+                    }
+                ]
+            },
+            "User": {
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "full_name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Full Name"
+                    },
+                    "admin": {
+                        "type": "boolean",
+                        "title": "Admin",
+                        "default": false,
+                        "readOnly": true
+                    },
+                    "disabled": {
+                        "type": "boolean",
+                        "title": "Disabled",
+                        "default": false,
+                        "readOnly": true
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "username",
+                    "email"
+                ],
+                "title": "User"
+            },
+            "UserCreate": {
+                "properties": {
+                    "username": {
+                        "type": "string",
+                        "title": "Username"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email",
+                        "title": "Email"
+                    },
+                    "full_name": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Full Name"
+                    },
+                    "admin": {
+                        "type": "boolean",
+                        "title": "Admin",
+                        "default": false,
+                        "readOnly": true
+                    },
+                    "disabled": {
+                        "type": "boolean",
+                        "title": "Disabled",
+                        "default": false,
+                        "readOnly": true
+                    },
+                    "password": {
+                        "type": "string",
+                        "title": "Password"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "username",
+                    "email",
+                    "password"
+                ],
+                "title": "UserCreate"
+            },
+            "ValidationError": {
+                "properties": {
+                    "loc": {
+                        "items": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "integer"
+                                }
+                            ]
+                        },
+                        "type": "array",
+                        "title": "Location"
+                    },
+                    "msg": {
+                        "type": "string",
+                        "title": "Message"
+                    },
+                    "type": {
+                        "type": "string",
+                        "title": "Error Type"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "loc",
+                    "msg",
+                    "type"
+                ],
+                "title": "ValidationError"
+            }
+        }
+    }
+}

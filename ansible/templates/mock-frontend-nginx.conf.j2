@@ -1,0 +1,11 @@
+server {
+    listen {{ frontend_port }} default_server;
+    listen [::]:{{ frontend_port }} default_server;
+
+    root /var/www/html;
+    index index.html;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}

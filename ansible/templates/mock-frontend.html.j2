@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Pangloss Mock Frontend</title>
+  </head>
+  <body>
+    <h1>Pangloss Mock Frontend</h1>
+    <p>Backend API: <code>{{ backend_url }}</code></p>
+    <button id="check-api" type="button">Check API</button>
+    <pre id="output">Waiting for request...</pre>
+
+    <script>
+      const apiUrl = "{{ backend_url }}";
+      const output = document.getElementById("output");
+
+      document.getElementById("check-api").addEventListener("click", async () => {
+        output.textContent = "Requesting " + apiUrl + "/ ...";
+
+        try {
+          const response = await fetch(apiUrl + "/", { credentials: "include" });
+          const text = await response.text();
+
+          output.textContent = JSON.stringify({
+            ok: response.ok,
+            status: response.status,
+            body: text
+          }, null, 2);
+        } catch (error) {
+          output.textContent = error.stack || String(error);
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,206 @@
+---
+- name: Deploy Pangloss API backend
+  hosts: backend
+  become: true
+  tasks:
+    - name: Install backend system packages
+      ansible.builtin.apt:
+        name:
+          - acl
+          - ca-certificates
+          - curl
+          - git
+          - rsync
+          - docker.io
+          - python3
+          - python3-pip
+        update_cache: true
+        state: present
+
+    - name: Ensure Docker is running
+      ansible.builtin.service:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Ensure deploy group exists
+      ansible.builtin.group:
+        name: "{{ deploy_group }}"
+        system: true
+
+    - name: Ensure deploy user exists
+      ansible.builtin.user:
+        name: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        system: true
+        create_home: true
+        home: "/var/lib/{{ deploy_user }}"
+        shell: /usr/sbin/nologin
+
+    - name: Create deployment root
+      ansible.builtin.file:
+        path: "{{ deploy_root }}"
+        state: directory
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0755"
+
+    - name: Copy repository to backend
+      become: false
+      ansible.posix.synchronize:
+        src: "{{ playbook_dir }}/../"
+        dest: "{{ deploy_root }}/"
+        rsync_path: "sudo rsync"
+        rsync_opts:
+          - "--exclude=.git"
+          - "--exclude=.venv"
+          - "--exclude=__pycache__"
+          - "--exclude=.pytest_cache"
+          - "--exclude=.mypy_cache"
+          - "--exclude=.ruff_cache"
+          - "--chown={{ deploy_user }}:{{ deploy_group }}"
+      delegate_to: localhost
+
+    - name: Install uv
+      ansible.builtin.shell: |
+        set -euo pipefail
+        if ! command -v uv >/dev/null 2>&1 || [ "$(uv --version | awk '{print $2}')" != "{{ uv_version }}" ]; then
+          curl -LsSf https://astral.sh/uv/{{ uv_version }}/install.sh | UV_INSTALL_DIR={{ uv_install_dir }} sh
+        fi
+      args:
+        executable: /bin/bash
+
+    - name: Install Python runtime with uv
+      ansible.builtin.command:
+        cmd: "uv python install {{ python_version }}"
+      environment:
+        UV_PYTHON_INSTALL_DIR: /opt/uv-python
+      changed_when: false
+
+    - name: Write backend environment
+      ansible.builtin.template:
+        src: pangloss.env.j2
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0640"
+
+    - name: Create Neo4j data volume
+      ansible.builtin.file:
+        path: /var/lib/pangloss-neo4j
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Check Neo4j container
+      ansible.builtin.command:
+        cmd: "docker inspect {{ neo4j_container_name }}"
+      register: neo4j_inspect
+      failed_when: false
+      changed_when: false
+
+    - name: Start Neo4j container
+      ansible.builtin.command:
+        cmd: >
+          docker run -d --name {{ neo4j_container_name }}
+          --restart unless-stopped
+          -p 127.0.0.1:7474:7474
+          -p 127.0.0.1:7687:7687
+          -e NEO4J_AUTH={{ neo4j_user }}/{{ neo4j_password }}
+          -v /var/lib/pangloss-neo4j:/data
+          {{ neo4j_image }}
+      when: neo4j_inspect.rc != 0
+
+    - name: Wait for Neo4j Bolt port
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: 7687
+        timeout: 120
+
+    - name: Install application dependencies
+      ansible.builtin.command:
+        cmd: "uv sync"
+        chdir: "{{ app_dir }}"
+      become_user: "{{ deploy_user }}"
+      environment:
+        UV_PYTHON_INSTALL_DIR: /opt/uv-python
+
+    - name: Install Pangloss API service
+      ansible.builtin.template:
+        src: pangloss-api.service.j2
+        dest: /etc/systemd/system/pangloss-api.service
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Restart pangloss-api
+
+    - name: Enable Pangloss API service
+      ansible.builtin.systemd:
+        name: pangloss-api
+        enabled: true
+        state: started
+        daemon_reload: true
+
+  handlers:
+    - name: Restart pangloss-api
+      ansible.builtin.systemd:
+        name: pangloss-api
+        state: restarted
+        daemon_reload: true
+
+- name: Deploy mock frontend VM
+  hosts: frontend
+  become: true
+  vars:
+    backend_url: "http://{{ hostvars[groups['backend'][0]].ansible_host }}:{{ api_port }}"
+  tasks:
+    - name: Install frontend system packages
+      ansible.builtin.apt:
+        name:
+          - nginx
+          - python3
+        update_cache: true
+        state: present
+
+    - name: Write mock frontend page
+      ansible.builtin.template:
+        src: mock-frontend.html.j2
+        dest: /var/www/html/index.html
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Configure nginx mock frontend
+      ansible.builtin.template:
+        src: mock-frontend-nginx.conf.j2
+        dest: /etc/nginx/sites-available/pangloss-mock-frontend
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Enable nginx site
+      ansible.builtin.file:
+        src: /etc/nginx/sites-available/pangloss-mock-frontend
+        dest: /etc/nginx/sites-enabled/pangloss-mock-frontend
+        state: link
+      notify: Reload nginx
+
+    - name: Remove default nginx site
+      ansible.builtin.file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload nginx
+
+    - name: Ensure nginx is running
+      ansible.builtin.service:
+        name: nginx
+        enabled: true
+        state: started
+
+  handlers:
+    - name: Reload nginx
+      ansible.builtin.service:
+        name: nginx
+        state: reloaded

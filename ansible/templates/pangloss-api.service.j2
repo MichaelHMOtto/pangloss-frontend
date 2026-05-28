@@ -1,0 +1,19 @@
+[Unit]
+Description=Pangloss API
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=simple
+User={{ deploy_user }}
+Group={{ deploy_group }}
+WorkingDirectory={{ app_dir }}
+EnvironmentFile={{ app_dir }}/.env
+Environment=UV_PYTHON_INSTALL_DIR=/opt/uv-python
+ExecStart={{ uv_install_dir }}/uv run uvicorn my_project.main:app --host {{ api_host }} --port {{ api_port }}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

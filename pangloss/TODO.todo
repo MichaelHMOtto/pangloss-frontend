@@ -1,0 +1,7 @@
+- Inheritance of properties
+- Labels
+- Allow typing.Self in type declarations
+
+
+Indexes:
+- Todo: make sure ULIDs are really globally unique across all nodes, not just BaseNode

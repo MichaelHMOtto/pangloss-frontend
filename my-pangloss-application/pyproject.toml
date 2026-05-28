@@ -1,0 +1,12 @@
+[project]
+name = "my-pangloss-application"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "pangloss",
+]
+
+[tool.uv.sources]
+pangloss = { path = "../pangloss", editable = true }
