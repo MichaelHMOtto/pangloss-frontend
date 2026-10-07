@@ -63,7 +63,7 @@ class UserInDB(User):
     async def get_by_email(cls, tx: Transaction, email: str) -> "UserInDB | None":
         query = """
         MATCH (user:PGUser)
-        WHERE user.username = $email
+        WHERE user.email = $email
         RETURN user
         """
         params = {"email": email}

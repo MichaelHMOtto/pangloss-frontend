@@ -1,0 +1,19 @@
+[Unit]
+Description=Pangloss Stress Test Runner
+After=network-online.target pangloss-api.service
+Wants=network-online.target
+Requires=pangloss-api.service
+
+[Service]
+Type=simple
+User={{ deploy_user }}
+Group={{ deploy_group }}
+WorkingDirectory={{ app_dir }}
+EnvironmentFile={{ app_dir }}/.env
+Environment=UV_PYTHON_INSTALL_DIR=/opt/uv-python
+ExecStart={{ uv_install_dir }}/uv run uvicorn stress_runner:app --host 0.0.0.0 --port {{ test_runner_port }}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

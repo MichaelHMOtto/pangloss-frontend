@@ -60,6 +60,7 @@
           - "--exclude=.ruff_cache"
           - "--chown={{ deploy_user }}:{{ deploy_group }}"
       delegate_to: localhost
+      notify: Restart pangloss-api
 
     - name: Install uv
       ansible.builtin.shell: |
@@ -100,7 +101,19 @@
       failed_when: false
       changed_when: false
 
-    - name: Start Neo4j container
+
+    - name: Remove Neo4j container when APOC is not configured
+      ansible.builtin.command:
+        cmd: "docker rm -f {{ neo4j_container_name }}"
+      when:
+        - neo4j_inspect.rc == 0
+        - >-
+          'NEO4J_PLUGINS=["apoc"]'
+          not in
+          ((neo4j_inspect.stdout | from_json | first).Config.Env | default([]))
+      register: neo4j_apoc_recreate
+
+    - name: Start Neo4j container with APOC
       ansible.builtin.command:
         cmd: >
           docker run -d --name {{ neo4j_container_name }}
@@ -108,15 +121,36 @@
           -p 127.0.0.1:7474:7474
           -p 127.0.0.1:7687:7687
           -e NEO4J_AUTH={{ neo4j_user }}/{{ neo4j_password }}
+          -e 'NEO4J_PLUGINS=["apoc"]'
           -v /var/lib/pangloss-neo4j:/data
           {{ neo4j_image }}
-      when: neo4j_inspect.rc != 0
+      when:
+        - neo4j_inspect.rc != 0 or neo4j_apoc_recreate is changed
 
     - name: Wait for Neo4j Bolt port
       ansible.builtin.wait_for:
         host: 127.0.0.1
         port: 7687
         timeout: 120
+
+    - name: Verify APOC installation
+      ansible.builtin.command:
+        argv:
+          - docker
+          - exec
+          - "{{ neo4j_container_name }}"
+          - cypher-shell
+          - -u
+          - "{{ neo4j_user }}"
+          - -p
+          - "{{ neo4j_password }}"
+          - "RETURN apoc.version();"
+      changed_when: false
+      retries: 10
+      delay: 3
+      register: apoc_check
+      until: apoc_check.rc == 0
+      
 
     - name: Install application dependencies
       ansible.builtin.command:
@@ -126,6 +160,107 @@
       environment:
         UV_PYTHON_INSTALL_DIR: /opt/uv-python
 
+    - name: Configure stress-test API user
+      ansible.builtin.shell: |
+        set -euo pipefail
+
+        uv run python - <<'PY'
+        import asyncio
+        import os
+
+        from neo4j import AsyncGraphDatabase
+        from pangloss.auth import get_password_hash, verify_password
+
+
+        async def main():
+            password = os.environ["STRESS_TEST_PASSWORD"]
+
+            driver = AsyncGraphDatabase.driver(
+                os.environ["DB_URL"],
+                auth=(
+                    os.environ["DB_USER"],
+                    os.environ["DB_PASSWORD"],
+                ),
+            )
+
+            async with driver.session(
+                database=os.environ["DB_DATABASE_NAME"]
+            ) as session:
+                result = await session.run(
+                    """
+                    MATCH (user:PGUser {username: $username})
+                    RETURN
+                        user.hashed_password AS hashed_password,
+                        user.email AS email,
+                        user.admin AS admin,
+                        user.disabled AS disabled
+                    """,
+                    username=os.environ["STRESS_TEST_USERNAME"],
+                )
+                existing = await result.single()
+
+                password_matches = False
+                if existing and existing["hashed_password"]:
+                    try:
+                        password_matches = verify_password(
+                            password,
+                            existing["hashed_password"],
+                        )
+                    except Exception:
+                        password_matches = False
+
+                changed = (
+                    existing is None
+                    or not password_matches
+                    or existing["email"] != os.environ["STRESS_TEST_EMAIL"]
+                    or existing["admin"] is not True
+                    or existing["disabled"] is not False
+                )
+
+                hashed_password = (
+                    existing["hashed_password"]
+                    if existing and password_matches
+                    else get_password_hash(password)
+                )
+
+                result = await session.run(
+                    """
+                    MERGE (user:PGUser {username: $username})
+                    SET user:PGInternal:PGCore,
+                        user.email = $email,
+                        user.hashed_password = $hashed_password,
+                        user.admin = true,
+                        user.disabled = false
+                    """,
+                    username=os.environ["STRESS_TEST_USERNAME"],
+                    email=os.environ["STRESS_TEST_EMAIL"],
+                    hashed_password=hashed_password,
+                )
+                await result.consume()
+
+                print("result=changed" if changed else "result=ok")
+
+            await driver.close()
+
+
+        asyncio.run(main())
+        PY
+      args:
+        executable: /bin/bash
+        chdir: "{{ app_dir }}"
+      become_user: "{{ deploy_user }}"
+      environment:
+        UV_PYTHON_INSTALL_DIR: /opt/uv-python
+        DB_URL: "bolt://127.0.0.1:7687"
+        DB_USER: "{{ neo4j_user }}"
+        DB_PASSWORD: "{{ neo4j_password }}"
+        DB_DATABASE_NAME: "{{ neo4j_database }}"
+        STRESS_TEST_USERNAME: "{{ stress_test_username }}"
+        STRESS_TEST_PASSWORD: "{{ stress_test_password }}"
+        STRESS_TEST_EMAIL: "{{ stress_test_email }}"
+      register: stress_user_seed
+      changed_when: "'result=changed' in stress_user_seed.stdout"
+      no_log: true
     - name: Install Pangloss API service
       ansible.builtin.template:
         src: pangloss-api.service.j2
@@ -138,6 +273,52 @@
     - name: Enable Pangloss API service
       ansible.builtin.systemd:
         name: pangloss-api
+        enabled: true
+        state: started
+        daemon_reload: true
+
+    - name: Verify stress-test user authentication
+      ansible.builtin.uri:
+        url: "http://127.0.0.1:{{ api_port }}/api/users/token"
+        method: POST
+        body_format: json
+        body:
+          username: "{{ stress_test_username }}"
+          password: "{{ stress_test_password }}"
+        status_code: 200
+      register: stress_user_login
+      retries: 15
+      delay: 2
+      until: stress_user_login.status == 200
+      no_log: true
+
+    - name: Write stress test runner
+      ansible.builtin.template:
+        src: stress-runner.py.j2
+        dest: "{{ app_dir }}/stress_runner.py"
+        owner: "{{ deploy_user }}"
+        group: "{{ deploy_group }}"
+        mode: "0644"
+
+    - name: Install Pangloss test dependencies
+      ansible.builtin.command:
+        cmd: "uv sync --dev"
+        chdir: "{{ deploy_root }}/pangloss"
+      become_user: "{{ deploy_user }}"
+      environment:
+        UV_PYTHON_INSTALL_DIR: /opt/uv-python
+
+    - name: Install Pangloss test runner service
+      ansible.builtin.template:
+        src: pangloss-test-runner.service.j2
+        dest: /etc/systemd/system/pangloss-test-runner.service
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Enable Pangloss test runner service
+      ansible.builtin.systemd:
+        name: pangloss-test-runner
         enabled: true
         state: started
         daemon_reload: true

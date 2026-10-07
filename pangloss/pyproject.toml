@@ -50,3 +50,6 @@ filterwarnings = [
     "ignore:.*neo4j.*"
 ]
 
+markers = [
+    "stress: load and concurrency tests",
+]

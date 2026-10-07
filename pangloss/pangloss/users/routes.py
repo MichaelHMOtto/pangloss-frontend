@@ -1,4 +1,4 @@
-from typing import Annotated, Awaitable, cast
+from typing import Annotated, cast
 
 from authx import RequestToken
 from fastapi import APIRouter, Depends, FastAPI, Form, HTTPException, Request, Response
@@ -28,12 +28,11 @@ async def get_user_from_uid(uid: str, *args) -> User:
 
 
 async def get_current_active_user(
-    awaitable_user: Annotated[Awaitable[User], Depends(security.get_current_subject)],
+    current_user: Annotated[User, Depends(security.get_current_subject)],
 ):
-    current_user = await awaitable_user
-
     if current_user.disabled:
         raise HTTPException(status_code=400, detail="Inactive user")
+
     return current_user
 
 

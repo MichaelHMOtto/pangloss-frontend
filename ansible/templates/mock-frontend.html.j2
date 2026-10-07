@@ -9,6 +9,8 @@
     <h1>Pangloss Mock Frontend</h1>
     <p>Backend API: <code>{{ backend_url }}</code></p>
     <button id="check-api" type="button">Check API</button>
+    <button id="run-complex-stress" type="button">Run Complex Stress</button>
+    <button id="check-job" type="button" disabled>Check Job</button>
     <pre id="output">Waiting for request...</pre>
 
     <script>
@@ -30,6 +32,33 @@
         } catch (error) {
           output.textContent = error.stack || String(error);
         }
+      });
+
+      const runnerUrl = "http://{{ hostvars[groups['backend'][0]].ansible_host }}:{{ test_runner_port }}";
+      let currentJobId = null;
+
+      document.getElementById("run-complex-stress").addEventListener("click", async () => {
+        output.textContent = "Starting stress test...";
+
+        const response = await fetch(runnerUrl + "/stress/run", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({suite: "complex"})
+        });
+
+        const data = await response.json();
+        currentJobId = data.id;
+        document.getElementById("check-job").disabled = false;
+        output.textContent = JSON.stringify(data, null, 2);
+      });
+
+      document.getElementById("check-job").addEventListener("click", async () => {
+        if (!currentJobId) return;
+
+        const response = await fetch(runnerUrl + "/stress/jobs/" + currentJobId);
+        const data = await response.json();
+
+        output.textContent = JSON.stringify(data, null, 2);
       });
     </script>
   </body>

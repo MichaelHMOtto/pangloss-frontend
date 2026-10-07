@@ -7,12 +7,22 @@ app_dir: "{{ deploy_root }}/my-pangloss-application"
 api_host: "0.0.0.0"
 api_port: 8000
 frontend_port: 8080
+test_runner_port: 8010
+
+pangloss_installed_apps:
+  - pangloss
+  - tests.test_api.test_app
+
 
 neo4j_container_name: pangloss-neo4j
 neo4j_image: neo4j:5-community
 neo4j_user: neo4j
 neo4j_password: "pangloss-password"
 neo4j_database: neo4j
+
+stress_test_username: testuser
+stress_test_password: testpassword
+stress_test_email: testuser@example.com
 
 authjwt_secret_key: "change-this-before-production"
 entity_base_url: "http://{{ hostvars[groups['backend'][0]].ansible_host }}:{{ api_port }}/entity/"
