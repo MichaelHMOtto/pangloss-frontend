@@ -13,7 +13,7 @@ config.JWT_SECRET_KEY = "SECRET_KEY"
 config.JWT_TOKEN_LOCATION = ["headers", "query", "cookies", "json"]
 config.JWT_CSRF_METHODS = []
 config.JWT_COOKIE_SAMESITE = "none"
-config.JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=1)
+config.JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=15)
 config.JWT_SESSION_COOKIE = True
 
 

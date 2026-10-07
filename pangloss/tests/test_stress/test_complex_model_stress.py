@@ -349,3 +349,8 @@ async def test_concurrent_complex_model_repeated_updates(
             "second_update_edges_per_request": 2,
         },
     )
+
+    assert not failed, (
+        f"{len(failed)} of {total_requests} workflows failed: "
+        f"{dict(error_counts)}"
+    )
